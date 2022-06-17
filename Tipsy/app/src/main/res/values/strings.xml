@@ -8,4 +8,6 @@
     <string name="round_up_tip">Round up tip?</string>
     <string name="calculate">Calculate</string>
     <string name="result">Result:</string>
+    <string name="service_quality_icon">Service Quality Icon</string>
+    <string name="round_up_tip_icon">Round Up Tip Icon</string>
 </resources>
