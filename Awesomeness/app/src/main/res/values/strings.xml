@@ -1,3 +1,25 @@
 <resources>
     <string name="app_name">Awesomeness</string>
+    <string name="quote_1">Think of me like Yoda, but instead of being little and
+green I wear suits and I’m awesome. I’m your bro—I’m Broda!</string>
+    <string name="quote_2">Okay, pep talk! You can do this, but to be more
+accurate, you probably can’t. You’re way out of practice and she’s way too hot
+for you. So, remember, it’s not about scoring. It’s about believing you can do
+it, even though you probably can’t. Go get ‘em, tiger!</string>
+    <string name="quote_3">It’s gonna be legend- … wait for it… and I hope
+you’re not lactose intolerant because the second half of that word is DAIRY!</string>
+    <string name="quote_4">In my body, where the shame gland should be, there is
+a second awesome gland. True story.</string>
+    <string name="quote_5">
+        God, it’s me, Barney. What up? I know we don’t talk
+much, but I know a lot of girls call out your name because of me.
+    </string>
+    <string name="quote_6">
+        Do you have some puritanical hang up on prostitution?
+Dude, it’s the world’s oldest profession
+    </string>
+    <string name="quote_7">
+Suits are full of joy. They’re the sartorial
+equivalent of a baby’s smile.
+    </string>
 </resources>
