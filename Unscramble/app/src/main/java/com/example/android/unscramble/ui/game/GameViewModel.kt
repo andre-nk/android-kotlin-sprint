@@ -1,32 +1,31 @@
 package com.example.android.unscramble.ui.game
 
 import android.util.Log
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 
 class GameViewModel: ViewModel() {
-    private lateinit var wordsList: MutableList<String>
+    private var wordsList: MutableList<String>
+    private var _score = MutableLiveData(0)
+    private var _currentWordCount = MutableLiveData(0)
+    private val _currentScrambledWord = MutableLiveData<String>()
+
+    private lateinit var currentWord: String
+
+    val score: LiveData<Int>
+        get() = _score
+
+    val currentWordCount: LiveData<Int>
+        get() = _currentWordCount
+
+    val currentScrambledWord: LiveData<String>
+        get() = _currentScrambledWord
 
     init {
         Log.d("GameFragment", "GameVM Created!")
         wordsList =  mutableListOf()
         getNextWord()
-    }
-
-    private var _score = 0
-    private var _currentWordCount = 0
-
-    private lateinit var _currentScrambledWord: String
-    private lateinit var currentWord: String
-
-    val score: Int
-        get() = _score
-
-    val currentScrambledWord: String
-        get() = _currentScrambledWord
-
-    override fun onCleared() {
-        super.onCleared()
-        Log.d("GameFragment", "GameVM Destroyed!")
     }
 
     private fun getNextWord() {
@@ -41,14 +40,15 @@ class GameViewModel: ViewModel() {
         if (wordsList.contains(currentWord)) {
             getNextWord()
         } else {
-            _currentScrambledWord = String(nextWordSequence)
-            ++_currentWordCount
+            _currentScrambledWord.value = String(nextWordSequence)
+            (_currentWordCount.value)?.inc()
+            Log.d("Current Word Value", _currentWordCount.value.toString())
             wordsList.add(currentWord)
         }
     }
 
     private fun increaseScore() {
-        _score += SCORE_INCREASE
+        _score.value = (_score.value)?.plus(SCORE_INCREASE)
     }
 
     fun validateAnswer(playerAnswer: String) : Boolean {
@@ -61,7 +61,7 @@ class GameViewModel: ViewModel() {
     }
 
     fun nextWord() : Boolean {
-        return if (_currentWordCount < MAX_NO_OF_WORDS){
+        return if (_currentWordCount.value!! < MAX_NO_OF_WORDS){
             getNextWord()
             true
         } else {
@@ -70,8 +70,8 @@ class GameViewModel: ViewModel() {
     }
 
     fun reinitialiseData() {
-        _score = 0
-        _currentWordCount = 0
+        _score.value = 0
+        _currentWordCount.value = 0
         wordsList.clear()
         getNextWord()
     }
