@@ -17,4 +17,5 @@
 
 <resources>
     <string name="app_name">Mars Photos</string>
+    <string name="api_status">API Status</string>
 </resources>
