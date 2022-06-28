@@ -39,7 +39,7 @@ class StartFragment : Fragment() {
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
+    ): View {
         val fragmentBinding = FragmentStartBinding.inflate(inflater, container, false)
         binding = fragmentBinding
         return fragmentBinding.root
@@ -59,7 +59,7 @@ class StartFragment : Fragment() {
     /**
      * Start an order with the desired quantity of cupcakes and navigate to the next screen.
      */
-    fun orderCupcake(quantity: Int) {
+    private fun orderCupcake(quantity: Int) {
         sharedViewModel.setQuantity(quantity)
         if (sharedViewModel.flavor.value.isNullOrEmpty()){
             sharedViewModel.setFlavor(getString(R.string.vanilla))

@@ -31,5 +31,6 @@
         <item name="radioButtonStyle">@style/Widget.Cupcake.CompoundButton.RadioButton</item>
         <!-- Text appearance style. -->
         <item name="textAppearanceSubtitle1">@style/TextAppearance.Cupcake.Subtitle1</item>
+        <item name="textInputStyle">@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox</item>
     </style>
 </resources>

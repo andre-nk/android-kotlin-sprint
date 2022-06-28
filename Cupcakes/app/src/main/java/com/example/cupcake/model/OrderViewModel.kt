@@ -16,6 +16,12 @@ class OrderViewModel: ViewModel() {
     private val _flavor = MutableLiveData("")
     val flavor: LiveData<String> = _flavor
 
+    private val _customerName = MutableLiveData("")
+    val customerName: LiveData<String> = _customerName
+
+    private val _customerAddress = MutableLiveData("")
+    val customerAddress: LiveData<String> = _customerAddress
+
     private val _pickup = MutableLiveData("")
     val pickup: LiveData<String> = _pickup
 
@@ -41,9 +47,11 @@ class OrderViewModel: ViewModel() {
         resetOrder()
     }
 
-    private fun resetOrder(){
+    fun resetOrder(){
         _quantity.value = 0
         _flavor.value = ""
+        _customerName.value = ""
+        _customerAddress.value = ""
         _pickup.value = datePickupOptions[0]
         _price.value = 0.0
     }
@@ -55,6 +63,11 @@ class OrderViewModel: ViewModel() {
 
     fun setFlavor(flavor: String){
         _flavor.value = flavor
+    }
+
+    fun setCustomerInfo(name: String, address: String){
+        _customerName.value = name
+        _customerAddress.value = address
     }
 
     fun setPickup(pickupDate: String){

@@ -19,7 +19,6 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
@@ -40,7 +39,7 @@ class PickupFragment : Fragment() {
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
+    ): View {
         val fragmentBinding = FragmentPickupBinding.inflate(inflater, container, false)
         binding = fragmentBinding
         return fragmentBinding.root
@@ -53,13 +52,17 @@ class PickupFragment : Fragment() {
             viewModel = sharedViewModel
             lifecycleOwner = viewLifecycleOwner
             nextButton.setOnClickListener { goToNextScreen() }
+            cancelButton.setOnClickListener {
+                sharedViewModel.resetOrder()
+                findNavController().navigate(R.id.action_pickupFragment_to_startFragment)
+            }
         }
     }
 
     /**
      * Navigate to the next screen to see the order summary.
      */
-    fun goToNextScreen() {
+    private fun goToNextScreen() {
         findNavController().navigate(R.id.action_pickupFragment_to_summaryFragment)
     }
 
