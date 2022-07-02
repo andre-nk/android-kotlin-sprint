@@ -12,13 +12,19 @@ class ListViewModel : ViewModel() {
     // TODO: Implement the ViewModel
 
     private val _peopleList = MutableLiveData<List<PeopleModel>>()
+    private val _selectedPeopleModel = MutableLiveData<PeopleModel>()
     private val _errorStatus = MutableLiveData<String>()
 
     val peopleList: LiveData<List<PeopleModel>> = _peopleList
+    val selectedPeopleModel: LiveData<PeopleModel> = _selectedPeopleModel
     val errorStatus: LiveData<String> = _errorStatus
 
     init {
         getPeople()
+    }
+
+    fun selectPeople(people: PeopleModel){
+        _selectedPeopleModel.value = people
     }
 
     private fun getPeople() {
