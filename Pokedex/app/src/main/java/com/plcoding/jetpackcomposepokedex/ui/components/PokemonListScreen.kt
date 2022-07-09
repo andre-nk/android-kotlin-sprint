@@ -2,26 +2,41 @@ package com.plcoding.jetpackcomposepokedex.ui.components
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Surface
-import androidx.compose.material.Text
+import androidx.compose.material.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment.Companion.CenterHorizontally
+import androidx.compose.ui.Alignment.Companion.CenterVertically
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.focus.FocusState
 import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltNavGraphViewModel
 import androidx.navigation.NavController
+import androidx.navigation.compose.navigate
+import coil.request.ImageRequest
+import com.google.accompanist.coil.CoilImage
 import com.plcoding.jetpackcomposepokedex.R
+import com.plcoding.jetpackcomposepokedex.data.remote.models.PokedexListEntry
 
 @Composable
 fun PokemonListScreen(
@@ -44,10 +59,10 @@ fun PokemonListScreen(
                 hint = "Search Pokemon...",
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 30.dp)
-            ){
-
-            }
+                    .padding(horizontal = 16.dp)
+                    .padding(top = 30.dp)
+            )
+            PokedexList(navController = navController)
         }
     }
 }
@@ -91,6 +106,158 @@ fun SearchBar(
                 color = Color.LightGray,
                 modifier = Modifier.padding(horizontal = 20.dp, vertical = 14.dp)
             )
+        }
+    }
+}
+
+@Composable
+fun PokedexList(
+    viewModel: PokemonListViewModel = hiltNavGraphViewModel(),
+    navController: NavController
+) {
+    val pokedexList by remember { viewModel.pokedexList }
+    val isEndReached by remember { viewModel.isEndReached }
+    val loadingError by remember { viewModel.loadingError }
+    val isLoading by remember { viewModel.isLoading }
+
+//    LazyVerticalGrid(
+//        cells = GridCells.Fixed(2),
+//        contentPadding = PaddingValues(16.dp),
+//
+//        ) {
+//        items(pokedexList.size) { index ->
+//            if (index >= pokedexList.size - 1 && !isEndReached) {
+//                //Reached end
+//                viewModel.paginatePokemon()
+//            }
+//
+//            Box(
+//                modifier = Modifier.padding(8.dp)
+//            ) {
+//                PokedexEntry(
+//                    entry = pokedexList[index],
+//                    navController = navController,
+//                )
+//            }
+//        }
+//    }
+
+    LazyColumn(contentPadding = PaddingValues(16.dp)) {
+        items(pokedexList.size) { index ->
+            if (index >= pokedexList.size - 1 && !isEndReached) {
+                //Reached end
+                viewModel.paginatePokemon()
+            }
+
+            Box(
+                modifier = Modifier.padding(8.dp)
+            ) {
+                PokedexEntry(
+                    entry = pokedexList[index],
+                    navController = navController,
+                )
+            }
+        }
+    }
+
+    Box(
+        modifier = Modifier.fillMaxSize()
+    ) {
+        if (isLoading) {
+            CircularProgressIndicator(color = MaterialTheme.colors.primary)
+        }
+        if (loadingError.isNotEmpty()) {
+            RetryComponent(error = loadingError) {
+                viewModel.paginatePokemon()
+            }
+        }
+    }
+}
+
+@Composable
+fun PokedexEntry(
+    entry: PokedexListEntry,
+    navController: NavController,
+    viewModel: PokemonListViewModel = hiltNavGraphViewModel()
+) {
+    val defaultDominantColor = MaterialTheme.colors.surface
+    var dominantColor by remember {
+        mutableStateOf(defaultDominantColor)
+    }
+
+    Box(
+        modifier = Modifier
+            .clip(RoundedCornerShape(10.dp))
+            .background(
+                Brush.linearGradient(
+                    listOf(
+                        defaultDominantColor,
+                        dominantColor,
+                    )
+                )
+            )
+            .clickable {
+                navController.navigate(
+                    "pokemon_detail_screen/${dominantColor.toArgb()}/${entry.pokemonName}"
+                )
+            }
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp)
+        ) {
+            Column(
+                modifier = Modifier
+                    .align(CenterVertically)
+            ) {
+                Text(
+                    text = "No. ${entry.number}",
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight.Normal,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.padding(bottom = 6.dp)
+                )
+                Text(
+                    text = entry.pokemonName,
+                    fontSize = 24.sp,
+                    fontWeight = FontWeight.Bold,
+                    textAlign = TextAlign.Center,
+                )
+            }
+            Spacer(Modifier.weight(1f))
+            CoilImage(
+                request = ImageRequest.Builder(LocalContext.current)
+                    .data(entry.spriteUrl)
+                    .target {
+                        viewModel.getDominantColor(it) { color ->
+                            dominantColor = color
+                        }
+                    }
+                    .build(),
+                contentDescription = "${entry.pokemonName}'s Sprite",
+                fadeIn = true,
+                modifier = Modifier
+                    .size(120.dp)
+                    .align(CenterVertically)
+            ) {
+                CircularProgressIndicator(
+                    color = MaterialTheme.colors.primary,
+                    modifier = Modifier.scale(0.5f)
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun RetryComponent(
+    error: String,
+    onRetry: () -> Unit
+) {
+    Column {
+        Text(error, color = Color.Red, fontSize = 16.sp)
+        Spacer(modifier = Modifier.height(8.dp))
+        Button(onClick = { onRetry() }, modifier = Modifier.align(CenterHorizontally)) {
+            Text("Retry")
         }
     }
 }
