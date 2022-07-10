@@ -1,5 +1,6 @@
 package com.plcoding.jetpackcomposepokedex.repository
 
+import android.util.Log
 import com.plcoding.jetpackcomposepokedex.data.remote.PokemonApi
 import com.plcoding.jetpackcomposepokedex.data.remote.responses.Pokemon
 import com.plcoding.jetpackcomposepokedex.data.remote.responses.PokemonList
