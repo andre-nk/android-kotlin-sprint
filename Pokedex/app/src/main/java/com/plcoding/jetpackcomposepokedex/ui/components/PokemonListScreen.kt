@@ -12,7 +12,9 @@ import androidx.compose.material.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment.Companion.Center
 import androidx.compose.ui.Alignment.Companion.CenterHorizontally
+import androidx.compose.ui.Alignment.Companion.CenterStart
 import androidx.compose.ui.Alignment.Companion.CenterVertically
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -40,6 +42,7 @@ import com.plcoding.jetpackcomposepokedex.data.remote.models.PokedexListEntry
 
 @Composable
 fun PokemonListScreen(
+    viewModel: PokemonListViewModel = hiltNavGraphViewModel(),
     navController: NavController
 ) {
     Surface(
@@ -60,8 +63,10 @@ fun PokemonListScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 16.dp)
-                    .padding(top = 30.dp)
-            )
+                    .padding(top = 30.dp),
+            ) { query ->
+                viewModel.searchPokemon(query)
+            }
             PokedexList(navController = navController)
         }
     }
@@ -100,11 +105,20 @@ fun SearchBar(
                     isHintDisplayed = it != FocusState.Active
                 }
         )
+        Image(
+            painterResource(id = R.drawable.ic_baseline_search_24),
+            contentDescription = "search_icon",
+            modifier = Modifier
+                .padding(start = 16.dp)
+                .align(CenterStart)
+        )
         if (isHintDisplayed) {
             Text(
                 text = hint,
-                color = Color.LightGray,
-                modifier = Modifier.padding(horizontal = 20.dp, vertical = 14.dp)
+                color = Color.Gray,
+                modifier = Modifier
+                    .padding(horizontal = 20.dp, vertical = 14.dp)
+                    .padding(start = 32.dp)
             )
         }
     }
@@ -119,34 +133,13 @@ fun PokedexList(
     val isEndReached by remember { viewModel.isEndReached }
     val loadingError by remember { viewModel.loadingError }
     val isLoading by remember { viewModel.isLoading }
-
-//    LazyVerticalGrid(
-//        cells = GridCells.Fixed(2),
-//        contentPadding = PaddingValues(16.dp),
-//
-//        ) {
-//        items(pokedexList.size) { index ->
-//            if (index >= pokedexList.size - 1 && !isEndReached) {
-//                //Reached end
-//                viewModel.paginatePokemon()
-//            }
-//
-//            Box(
-//                modifier = Modifier.padding(8.dp)
-//            ) {
-//                PokedexEntry(
-//                    entry = pokedexList[index],
-//                    navController = navController,
-//                )
-//            }
-//        }
-//    }
+    val isSearching by remember { viewModel.isSearching }
 
     LazyColumn(contentPadding = PaddingValues(16.dp)) {
         items(pokedexList.size) { index ->
-            if (index >= pokedexList.size - 1 && !isEndReached) {
+            if (index >= pokedexList.size - 1 && !isEndReached && !isLoading && !isSearching) {
                 //Reached end
-                viewModel.paginatePokemon()
+                viewModel.paginatePokemon(false)
             }
 
             Box(
@@ -161,14 +154,22 @@ fun PokedexList(
     }
 
     Box(
-        modifier = Modifier.fillMaxSize()
+        modifier = Modifier.fillMaxSize(),
+        contentAlignment = Center
     ) {
+        if (pokedexList.isEmpty()) {
+            RetryComponent(error = "No pokemon found.") {
+                viewModel.paginatePokemon(true)
+            }
+        }
+
         if (isLoading) {
             CircularProgressIndicator(color = MaterialTheme.colors.primary)
         }
+
         if (loadingError.isNotEmpty()) {
             RetryComponent(error = loadingError) {
-                viewModel.paginatePokemon()
+                viewModel.paginatePokemon(true)
             }
         }
     }
@@ -203,7 +204,9 @@ fun PokedexEntry(
             }
     ) {
         Row(
-            modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp)
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 24.dp)
         ) {
             Column(
                 modifier = Modifier
@@ -254,7 +257,7 @@ fun RetryComponent(
     onRetry: () -> Unit
 ) {
     Column {
-        Text(error, color = Color.Red, fontSize = 16.sp)
+        Text(error, color = Color.Red, fontSize = 24.sp, fontWeight = FontWeight.SemiBold)
         Spacer(modifier = Modifier.height(8.dp))
         Button(onClick = { onRetry() }, modifier = Modifier.align(CenterHorizontally)) {
             Text("Retry")

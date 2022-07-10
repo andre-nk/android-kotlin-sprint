@@ -14,6 +14,7 @@ import com.plcoding.jetpackcomposepokedex.repository.PokemonRepository
 import com.plcoding.jetpackcomposepokedex.util.Constants.LIMIT_SIZE
 import com.plcoding.jetpackcomposepokedex.util.Resource
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -21,20 +22,60 @@ import javax.inject.Inject
 class PokemonListViewModel @Inject constructor(
     private val repository: PokemonRepository
 ) : ViewModel() {
-
-    private var currentPage = 0
-
     var pokedexList = mutableStateOf<List<PokedexListEntry>>(listOf())
     var loadingError = mutableStateOf("")
     var isLoading = mutableStateOf(false)
     var isEndReached = mutableStateOf(false)
+    var isSearching = mutableStateOf(false)
+
+    private var currentPage = 0
+    private var cachedPokemonList = listOf<PokedexListEntry>()
+    private var isSearchStarting = true
 
     init {
-        paginatePokemon()
+        paginatePokemon(false)
     }
 
-    fun paginatePokemon() {
+    fun searchPokemon(query: String) {
+        val targetList = if (isSearchStarting) {
+            pokedexList.value
+        } else {
+            cachedPokemonList
+        }
+
+        //Default thread for searching (heavyweight)
+        viewModelScope.launch(Dispatchers.Default) {
+            if (query.isEmpty()) {
+                //Cancel / stop search process, then reset the used PokedexList to cached (initial)
+                pokedexList.value = cachedPokemonList
+                isSearching.value = false
+                isSearchStarting = true
+                return@launch
+            }
+
+            //If query is not empty:
+            val searchResult = targetList.filter {
+                it.pokemonName.contains(query.trim(), ignoreCase = true) ||
+                        it.number.toString().contains(query.trim(), ignoreCase = true)
+            }
+
+            if(isSearchStarting){
+                //Caching the initial list (for faster reload after search)
+                cachedPokemonList = pokedexList.value
+                isSearchStarting = false
+            }
+
+            //Replacing the used pokedexList to the search result
+            pokedexList.value = searchResult
+            isSearching.value = true
+        }
+    }
+
+    fun paginatePokemon(resetList: Boolean) {
         Log.d("PAGINATE LAUNCHED", "TEST")
+        if(resetList){
+            currentPage = 0
+        }
 
         viewModelScope.launch {
             when (val result = repository.getPokemonList(LIMIT_SIZE, currentPage * LIMIT_SIZE)) {
